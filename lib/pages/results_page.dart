@@ -33,9 +33,12 @@
  */
 
 import 'package:buzzkill/drink.dart';
+import 'package:buzzkill/generated/l10n.dart';
+import 'package:buzzkill/measurement_conversion.dart';
 import 'package:buzzkill/ui_components/informative_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart';
 
 /// Displays lethal and safe dosages for the specified [Drink].
 class ResultsPage extends StatelessWidget {
@@ -56,10 +59,11 @@ class ResultsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final safeDosage = drink.safeDosage(bodyWeight);
     final lethalDosage = drink.lethalDosage(bodyWeight);
+    final numberFormat = NumberFormat('#.#');
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Dosages',
+          S.of(context).resultsPageAppBarTitle,
         ),
       ),
       body: Padding(
@@ -68,28 +72,34 @@ class ResultsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             InformativeCard(
-              title: 'Lethal Dosage',
+              title: S.of(context).resultsPageLethalDosageTitle,
               leadingAssetName: 'assets/lethal.png',
-              message: lethalDosage == 1
-                  ? 'One serving.'
-                  : '${lethalDosage.toStringAsFixed(1)} '
-                      'servings in your system at one time.',
+              message: S.of(context).resultsPageLethalDosageMessage(
+                    lethalDosage,
+                    numberFormat.format(lethalDosage),
+                  ),
             ),
             const SizedBox(
               height: 12,
             ),
             InformativeCard(
-              title: 'Daily Safe Maximum',
+              title: S.of(context).resultsPageSafeDosageTitle,
               leadingAssetName: 'assets/safe.png',
-              message: safeDosage == 1
-                  ? 'One serving per day.'
-                  : '${safeDosage.toStringAsFixed(1)} '
-                      'servings per day.',
+              message: S.of(context).resultsPageSafeDosageMessage(
+                    safeDosage,
+                    numberFormat.format(safeDosage),
+                  ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
               child: Text(
-                '*Based on ${drink.servingSize} fl. oz serving.',
+                S.of(context).resultsPageFirstDisclaimer(
+                      numberFormat.format(
+                        drink.servingSize.toMillilitersIfShouldUseMetricSystem(
+                          Localizations.localeOf(context),
+                        ),
+                      ),
+                    ),
                 textAlign: TextAlign.start,
                 style: Theme.of(context)
                     .textTheme
@@ -100,8 +110,7 @@ class ResultsPage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
-                '*Applies to age 18 and over. This calculator '
-                'does not replace professional medical advice.',
+                S.of(context).resultsPageSecondDisclaimer,
                 style: Theme.of(context).textTheme.bodyText2.apply(
                       color: Theme.of(context).textTheme.caption.color,
                     ),

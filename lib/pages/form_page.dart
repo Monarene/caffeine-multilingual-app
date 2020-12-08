@@ -33,6 +33,8 @@
  */
 
 import 'package:buzzkill/drink.dart';
+import 'package:buzzkill/generated/l10n.dart';
+import 'package:buzzkill/measurement_conversion.dart';
 import 'package:buzzkill/pages/results_page.dart';
 import 'package:buzzkill/ui_components/digits_text_field.dart';
 import 'package:buzzkill/ui_components/drink_form_radio_list_tile.dart';
@@ -61,29 +63,30 @@ class _FormPageState extends State<FormPage> {
           (_servingSizeTextController.intValue > 0 &&
               _caffeineTextController.intValue > 0));
 
-  final _drinkSuggestions = const [
-    Drink(
-      name: 'Drip Coffee (Cup)',
-      caffeineAmount: 145,
-      servingSize: 8,
-    ),
-    Drink(
-      name: 'Espresso (Shot)',
-      caffeineAmount: 77,
-      servingSize: 1.5,
-    ),
-    Drink(
-      name: 'Latte (Mug)',
-      caffeineAmount: 154,
-      servingSize: 16,
-    ),
-  ];
+  List<Drink> _drinkSuggestions;
+
+  Locale _userLocale;
+
+  @override
+  void didChangeDependencies() {
+    final newLocale = Localizations.localeOf(context);
+
+    if (newLocale != _userLocale) {
+      _userLocale = newLocale;
+      _weightTextController.clear();
+      _servingSizeTextController.clear();
+      _caffeineTextController.clear();
+      _selectedDrinkSuggestion = null;
+      _drinkSuggestions = Drink.suggestionListOf(context);
+    }
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
           title: Text(
-            'Death by Caffeine Calculator',
+            S.of(context).formPageAppBarTitle,
           ),
         ),
         body: GestureDetector(
@@ -100,8 +103,8 @@ class _FormPageState extends State<FormPage> {
                 _ListItemPadding(
                   child: DigitsTextField(
                     controller: _weightTextController,
-                    labelText: 'Body Weight',
-                    suffixText: 'pounds',
+                    labelText: S.of(context).formPageWeightInputLabel,
+                    suffixText: S.of(context).formPageWeightInputSuffix,
                     onChanged: (_) {
                       // The setState call enables/disables the action button if
                       // the serving size or caffeine amount input changes.
@@ -111,7 +114,7 @@ class _FormPageState extends State<FormPage> {
                 ),
                 ListTile(
                   title: Text(
-                    'Choose a drink',
+                    S.of(context).formPageRadioListLabel,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -141,11 +144,16 @@ class _FormPageState extends State<FormPage> {
                   // Important for enabling/disabling the action button if the
                   // serving size or caffeine amount input changes.
                   onInputChanged: () => setState(() {}),
-                  titleText: 'Other',
-                  servingSizeLabelText: 'Serving Size',
-                  servingSizeSuffixText: 'fl. oz',
-                  caffeineAmountLabelText: 'Caffeine',
-                  caffeineAmountSuffixText: 'mg',
+                  titleText: S.of(context).formPageCustomDrinkRadioTitle,
+                  servingSizeLabelText:
+                      S.of(context).formPageCustomDrinkServingSizeInputLabel,
+                  servingSizeSuffixText:
+                      S.of(context).formPageCustomDrinkServingSizeInputSuffix,
+                  caffeineAmountLabelText:
+                      S.of(context).formPageCustomDrinkCaffeineAmountInputLabel,
+                  caffeineAmountSuffixText: S
+                      .of(context)
+                      .formPageCustomDrinkCaffeineAmountInputSuffix,
                 ),
                 _ListItemPadding(
                   child: SizedBox(
@@ -155,7 +163,7 @@ class _FormPageState extends State<FormPage> {
                           ? () => _pushResultsPage(context)
                           : null,
                       child: Text(
-                        'CALCULATE',
+                        S.of(context).formPageActionButtonTitle,
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
@@ -168,14 +176,16 @@ class _FormPageState extends State<FormPage> {
       );
 
   void _pushResultsPage(BuildContext context) {
-    final weight = _weightTextController.intValue;
+    final weight = _weightTextController.intValue.toPoundsIfNotAlready(
+      _userLocale,
+    );
 
-    // If there's no selected suggestion, we create a new [Drink] with
-    // the inputted data.
     final drink = _selectedDrinkSuggestion ??
         Drink(
           caffeineAmount: _caffeineTextController.intValue,
-          servingSize: _servingSizeTextController.intValue.toDouble(),
+          servingSize: _servingSizeTextController.intValue.toFlOzIfNotAlready(
+            _userLocale,
+          ),
         );
 
     Navigator.of(context).push(

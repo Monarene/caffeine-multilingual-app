@@ -32,6 +32,7 @@
  * THE SOFTWARE.
  */
 
+import 'package:buzzkill/generated/l10n.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
@@ -65,5 +66,40 @@ class Drink {
   double safeDosage(int bodyWeight) {
     final caffeineTolerance = bodyWeight * 2.72155;
     return caffeineTolerance / caffeineAmount;
+  }
+
+  static List<Drink> suggestionListOf(BuildContext context) {
+    final suggestionList = [
+      Drink(
+        name: S.of(context).firstSuggestedDrinkName,
+        caffeineAmount: 145,
+        servingSize: 8,
+      ),
+      Drink(
+        name: S.of(context).secondSuggestedDrinkName,
+        caffeineAmount: 77,
+        servingSize: 1.5,
+      ),
+    ];
+    final countryCode = Localizations.localeOf(context).countryCode;
+    if (countryCode == 'BR') {
+      suggestionList.add(
+        Drink(
+          name: S.of(context).thirdSuggestedDrinkName,
+          servingSize: 6.42,
+          caffeineAmount: 23,
+        ),
+      );
+    } else {
+      suggestionList.add(
+        Drink(
+          name: S.of(context).thirdSuggestedDrinkName,
+          caffeineAmount: 154,
+          servingSize: 16,
+        ),
+      );
+    }
+
+    return suggestionList;
   }
 }
