@@ -35,6 +35,8 @@
 import 'package:buzzkill/app_colors.dart';
 import 'package:buzzkill/pages/form_page.dart';
 import 'package:flutter/material.dart';
+import 'package:buzzkill/generated/l10n.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() => runApp(_BuzzKillApp());
 
@@ -48,5 +50,14 @@ class _BuzzKillApp extends StatelessWidget {
         ),
         home: FormPage(),
         // TODO: Specify localizationsDelegates and supportedLocales.
+        localizationsDelegates: [
+          // 1
+          S.delegate,
+          // 2
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
       );
 }
